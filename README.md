@@ -60,8 +60,8 @@ Let's add air temperature as an overlay over that same period:
 
 What is evident is that as temperature rose, so did demand. It's not a perfectly aligned because we are comparing the whole of region and the air temperature observed at a single location, but it's pretty close.  
   
-The BOM confirms this extreme weather weather in their January 2016 weather summary:  
-"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
+The BOM confirms this extreme weather event in their January 2016 summary:  
+>"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
 http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml  
 
 The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb and the equivalent HTML outputs  
