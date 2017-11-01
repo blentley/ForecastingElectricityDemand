@@ -47,7 +47,7 @@ A sample of this data is available in SampleData/Demand.csv
 A sample of this data is available in SampleData/Temperature.csv  
 It's worth noting that the air temperature data will not arrive in a clean format as above. Each weather station's data will be in its own file and the usual cleansing, formatting and gap-filling will be needed.  
 
-The scripts where I've loaded raw demand and climate data into PostgreSQL can be found in Scripts/LoadDemand.ipynb and Scripts/LoadClimate.ipynb respectively. I've also included equivalent HTML outputs   
+The scripts where I've loaded raw demand and climate data into PostgreSQL can be found in Scripts/LoadDemand.ipynb and Scripts/LoadClimate.ipynb respectively. I've also included equivalent HTML outputs.   
   
 ## Exploring the data  
 This is what a few days of energy demand in January 2016 looked like:  
@@ -63,7 +63,12 @@ What is evident is that as temperature rose, so did demand. It's not a perfectly
 The BOM confirms this extreme weather event in their January 2016 summary:  
 >"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
 http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml  
-
+  
+Let's remove the time-series sequencing and plot temperature against demand to understand the relationship independent of time:  
+![DemandTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DemandTemp.PNG)  
+  
+We can see a clear U-shape forming between electricity demand and temperature. As temperature rises, people use more air conditioning, so demand rises. Simiarly, as temperature falls, people use more heating, so demand rises. There remains a 'sweet spot' of mild temperature between approximately 17 and 21 degrees Celsius where demand is lowest. The plot above has split the points by Weekdays and Weekends to show the slightly lower demand on weekends mostly due to businesses requiring less energy as they're not operational.  
+  
 The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb and the equivalent HTML outputs  
   
 ## Preparing the data  
