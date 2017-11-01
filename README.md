@@ -20,7 +20,7 @@ The Australian Energy Market Operator (AEMO) makes a number of short and long te
  	+ keras with tensorflow as the backend
  + PostgreSQL 9.6.1  
   
-This analysis will focus on the NSW NEM region and air temperature at Bankstown Airport (chosen for its somewhat geographical 'average' of Sydney, NSW)
+This analysis will focus on the NSW NEM region and air temperature at Bankstown Airport (chosen for its somewhat geographical 'average' of Sydney, NSW).
 
 ### Acknowledgements  
 I couldn't have made it this far without the knowledge shared by Dr Jason Brownlee and Jakob Aungiers, whose blogs were thoughtfully curated and easy to read. Respective links below:  
@@ -50,7 +50,19 @@ It's worth noting that the air temperature data will not arrive in a clean forma
 The scripts where I've loaded raw demand and climate data into PostgreSQL can be found in Scripts/LoadDemand.ipynb and Scripts/LoadClimate.ipynb respectively. I've also included equivalent HTML outputs   
   
 ## Exploring the data  
-This is what a few days of energy demand looks like
+This is what a few days of energy demand in January 2016 looked like:  
+![JanuaryDemand](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DemandSample.PNG)  
+  
+What we can see from this plot is that on regular days (5th to 11th), the demand averages around the 8,000MW level, which is consistent with the NSW average. There are however, days where the peak exceeds 11,000MW. What could cause such an irregular pattern in demand?  
+  
+Let's add air temperature as an overlay over that same period:  
+![DemandInclTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/TempOverlay.PNG)  
+
+What is evident is that as temperature rose, so did demand. It's not a perfectly aligned because we are comparing the whole of region and the air temperature observed at a single location, but it's pretty close.  
+  
+The BOM confirms this extreme weather weather in their January 2016 weather summary:  
+"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
+http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml  
 
 The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb and the equivalent HTML outputs  
   
