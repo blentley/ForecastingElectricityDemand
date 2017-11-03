@@ -203,7 +203,8 @@ def split_data(inputData, partitionPoint):
 The last step before modelling is to define the shape of the data. Here we specify three dimensions of the data:  
 + The number of observations / sequences  
 + The length of the sequence  
-+ The number of features / dimensions
++ The number of features / dimensions  
+
 ```python
 
 # Define a function for shaping the data into appropriately dimensioned tensors for Keras
@@ -215,7 +216,7 @@ def shape_data(inputData, featureNum):
     return result
 
 ```
-
+  
 ### Assembling the model  
 The next step is where we get to assemble the model using Keras. In the function code below, there are some key parts to point out:  
 + model = Sequ
@@ -249,19 +250,21 @@ In this step, I've included the functions used to make predictions according to 
 + Method 2 - predict_sequence_full  
 + Method 3 - predict_sequences_multiple  
   
-
-
+The comments in the code provide an overview of the functions key steps.  
+  
 ```python
 
 def predict_point_by_point(model, data):
     
+    # Use the model to make predictions
+    # Return the result in the correct shape
 	predicted = model.predict(data)
     predicted = np.reshape(predicted, (predicted.size,))
     
     return predicted
 
 ```
-
+  
 ```python
 
 def predict_sequence_full(model, data, window_size):
@@ -275,7 +278,7 @@ def predict_sequence_full(model, data, window_size):
     # Loop over the length of the X_train dataset
     for i in range(len(data)):
 
-        # Append the result to the predicted vector
+        # Append the predicted result to the predicted vector
                
         predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
         
@@ -291,7 +294,7 @@ def predict_sequence_full(model, data, window_size):
     return predicted
 
 ```
-
+    
 ```python
 
 def predict_sequences_multiple(model, data, window_size, prediction_len):
@@ -311,10 +314,11 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
         # The second loop is to iterate through the prediction length
         for j in range(prediction_len):
             
+            # Keep appending predictions
             predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
             curr_frame = curr_frame[1:]
             curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
-            
+
         prediction_seqs.append(predicted)
         
     return prediction_seqs
