@@ -278,8 +278,7 @@ def predict_point_by_point(model, data):
     
     # Use the model to make predictions
     # Return the result in the correct shape  
-	
-	predicted = model.predict(data)
+    predicted = model.predict(data)
 
     predicted = np.reshape(predicted, (predicted.size,))
     
