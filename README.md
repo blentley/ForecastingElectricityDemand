@@ -91,13 +91,15 @@ It depends on your application, and probably a lot of trial and error.
 Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
 
 #### 1. Predicting the next value, using known data  
-In this type of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
+In this method of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
 
 This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slightly adjustments from it's known previous value and only be slightly incorrect each time. There's probably not a value for predicting the next period, however it's a useful reference.  
-#### 2. Predicting the entire sequence, using only a starting seed of known data  
 
+#### 2. Predicting the entire sequence, using only a starting sequence of known data  
+In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data to predict a value for time period 7. The next prediction (time period 8) is made using known data from time periods 2 to 6, and the predicted value of time period 7. This process continues until the entirety of the sequence has been predicted. In this method, the known data used for prediction is limited to the initial sequence length, and subsequent predictions are reliant on previously predicted values.  
+  
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
 
 This method of prediction is the least generous (and likely to result in the highest error) since we're only feeding the model limited information and relying on accurate predictions to sustain future predictions. Errors would continue to be amplified as the sequence progresses. However, it still serves as a useful reference point. 
@@ -116,12 +118,33 @@ For each of these different prediction tyes, the predicted values can still be c
 
 ### Preparing the data  
 For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
+  
+The steps for data preparation have been developed as a series of functions, which I'll run through below.     
 
-In order to get 
+#### 1. Transform raw data into sequences using *prep_data*  
+In this function, our input data is transformed into sequences *(seq_len)*, before being returned as an array.  
+  
+```python
 
-+ Single-step prediction - make a prediction of the next period, and  
-+ Multi-step, full sequence prediction -  
-+ Multi-step, partial sequence prediction -   
+def prep_data(inputData, seq_len):
+
+    # Determine the length of the window
+    sequence_length = seq_len + 1
+    # Create an empty vector for the result
+    result = []
+    for index in range(len(inputData) - sequence_length):
+        # Append slices of data together i.e 
+        # 0 to sequence_length
+        # 1 to sequence_length + 1 etc
+        result.append(inputData[index: index + sequence_length])
+  
+    # Convert the result into a numpy array (from a list)
+    result = np.array(result)
+    
+    return result
+
+```
+
  
 
 ### Assembling the model  
