@@ -80,7 +80,7 @@ Let's begin with an 11 period time-series of demand. This is the format of the r
 
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
 
-The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences will be equivalent to observations as we train the model.  
+The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences (or windows as I've sometimes called them) are be equivalent to observations as we train the model.  
 
 If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.   
 
@@ -140,6 +140,74 @@ def prep_data(inputData, seq_len):
   
     # Convert the result into a numpy array (from a list)
     result = np.array(result)
+    
+    return result
+
+```
+  
+#### 2. Normalise the data using *normalise_windows*
+This function is re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in values.  
+  
+I've included in the return *base_val* is the starting value of each sequence before normalisation. I keep this handy for when it comes time to return the data back to its original scale, I have the reference point to perform this calculation.  
+
+```python
+
+def normalise_windows(window_data):
+    # Create an empty vector for the result
+    normalised_data = []
+    base_val = []
+    # Iterate through the windows, normalise and append
+    for window in window_data:
+        base_val_data = window[0]
+        base_val.append(base_val_data)
+        normalised_window = [((float(p) / float(window[0])) - 1) for p in window]
+        normalised_data.append(normalised_window)
+        
+    normalised_data = np.array(normalised_data)
+    base_val = np.array(base_val)
+        
+    return normalised_data, base_val
+
+```
+  
+#### 3. Partition the data into training and test sets  
+This function will take the normalised data and return four objects:  
++ x_train - an array of sequences used for making predictions  
++ y_train - an array of values that the model will learn how to predict  
++ x_test - an array of sequences that will be used for making predictions during validation  
++ y_test - an array of values that we will compare against predictions during validation  
+  
+```python
+
+# Define a function for partition data into training and test sets
+def split_data(inputData, partitionPoint):
+    
+    # Develop a partition to split the dataset into training and test set
+    row = round(partitionPoint * inputData.shape[0])
+ 
+    #np.random.shuffle(train)
+    # Create training sets 
+    train = inputData[:int(row), :]
+    x_train = train[:, :-1]
+    y_train = train[:, -1]
+    
+    # Create testing sets
+    x_test = inputData[int(row):, :-1]
+    y_test = inputData[int(row):, -1]
+    
+    return [x_train, y_train, x_test, y_test, row]
+
+```
+  
+#### 4. Shaping the data
+
+```python
+
+# Define a function for shaping the data into appropriately dimensioned tensors for Keras
+def shape_data(inputData, featureNum):
+    
+    # Reshape the input array
+    result = np.reshape(inputData, (inputData.shape[0], inputData.shape[1], featureNum))
     
     return result
 
