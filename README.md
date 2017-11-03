@@ -76,19 +76,25 @@ I started off by developing a predictive model of energy demand, where I only us
 
 I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used three different methods of making subsequent predictions. These are best illustrated with some simple, visual examples below.  
 
-Let's begin with an 11 period time-series of demand. Think is the format of the raw data.  
+Let's begin with an 11 period time-series of demand. This is the format of the raw data.  
+
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
 
 The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences will be equivalent to observations as we train the model.  
+
 If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.   
+
 ![Seq2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq2.PNG)  
 *How long should a sequence be?*  
 It depends on your application, and probably a lot of trial and error.  
   
-
 Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
-
+#### Predicting the next value, continually using known data  
+In this type of single-step prediction, sequences of known demand data are used to predict LP (last prediction). These single predictions can be compared to their known values during evaluation.  
+  
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
+
+#### Predicting the next value over the entire sequence  
 
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
 
