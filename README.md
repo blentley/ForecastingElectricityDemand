@@ -140,7 +140,7 @@ For each of these different prediction tyes, the predicted values can still be c
 ### Preparing the data  
 For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
   
-The steps for data preparation have been developed as a series of functions, which I'll run through below.     
+The steps for data preparation have been developed as a series of functions, which I'll run through below. These functions prepare the data for the univariate scenario, where historical demand is the only input. Some of the functions required further adaptatation for multi-dimensional input data, but the concept was largely the same. They are prefixed by *mv_* in Scripts/PredictingDemand.ipynb
 
 #### 1. Transform raw data into sequences using *prep_data*  
 In this function, our input data is transformed into sequences *(seq_len)*, before being returned as an array.  
@@ -154,9 +154,8 @@ def prep_data(inputData, seq_len):
     # Create an empty vector for the result
     result = []
     for index in range(len(inputData) - sequence_length):
+        
         # Append slices of data together i.e 
-        # 0 to sequence_length
-        # 1 to sequence_length + 1 etc
         result.append(inputData[index: index + sequence_length])
   
     # Convert the result into a numpy array (from a list)
@@ -279,7 +278,9 @@ def predict_point_by_point(model, data):
     
     # Use the model to make predictions
     # Return the result in the correct shape  
+	
 	predicted = model.predict(data)
+
     predicted = np.reshape(predicted, (predicted.size,))
     
     return predicted
