@@ -5,9 +5,10 @@ The purpose of this repository is to share with you my workflow initial attempt 
 This readme will give a flavour for the process I have undertaken to model this demand as it's a simplification of the detail in the full version. The full suite of scripts are also available in this repository and I will make reference to them in the text below.
   
 ### Project Motivations
-*Why did I choose the electricity market in Australia?*  
+*Why did I choose to work on forecasting in the Australian electricity market?*  
 + The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above broader inflation. That means there's something major happening in the news related to the energy market every few days. When I think about career pathways, I could see myself possibly working in this industry.  
 + I'm passionate about renewable energy, climate change and environmentalism so I wanted to understand more about how the market operates.  
++ I had an appetiser into time-series modelling in my last semester at uni, which followed on with some forecasting at work. I wanted to extend my learning a bit further this time and see what python and LSTMs were all about.  
   
 ### The National Energy Market (NEM)  
 The Australian Energy Market Operator (AEMO) makes a number of short and long term forecasts for effective business planning and investment decisions. This project will focus on their short term 5 minute dispatch forecast.  
@@ -76,35 +77,51 @@ I started off by developing a predictive model of energy demand, where I only us
 
 I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used three different methods of making subsequent predictions. These are best illustrated with some simple, visual examples below.  
 
-Let's begin with an 11 period time-series of demand. This is the format of the raw data.  
+#### Adding dimensions  
+The examples below begin by illustrating a scenario where demand was the only input into making predictions. To further complicate matters, air temperature will be introduced as an additional dimension and the end of each method. This is where I spent the most time trying to get my head around a multi-dimensional space, so I hope these are helpful.    
 
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
+and again with temperature  
+
+![Seq6](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq6.PNG)  
 
 The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences (or windows as I've sometimes called them) are be equivalent to observations as we train the model.  
 
-If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.   
+If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.  
 
 ![Seq2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq2.PNG)  
+and again with temperature  
+
+![Seq7](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq7.PNG)  
+
 *How long should a sequence be?*  
 It depends on your application, and probably a lot of trial and error.  
   
 Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
 
-#### 1. Predicting the next value, using known data  
+#### Method 1. Predicting the next value, using known data  
 In this method of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
 
 This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slightly adjustments from it's known previous value and only be slightly incorrect each time. There's probably not a value for predicting the next period, however it's a useful reference.  
+  
+Here is Method 1, with the feature for temperature included  
+  
+![Seq8](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq8.PNG)  
 
-#### 2. Predicting the entire sequence, using only a starting sequence of known data  
+#### Method 2. Predicting the entire sequence, using only a starting sequence of known data  
 In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data to predict a value for time period 7. The next prediction (time period 8) is made using known data from time periods 2 to 6, and the predicted value of time period 7. This process continues until the entirety of the sequence has been predicted. In this method, the known data used for prediction is limited to the initial sequence length, and subsequent predictions are reliant on previously predicted values.  
   
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
 
-This method of prediction is the least generous (and likely to result in the highest error) since we're only feeding the model limited information and relying on accurate predictions to sustain future predictions. Errors would continue to be amplified as the sequence progresses. However, it still serves as a useful reference point. 
+This method of prediction is the least generous (and likely to result in the highest error) since we're only feeding the model limited information and relying on accurate predictions to sustain future predictions. Errors would continue to be amplified as the sequence progresses. However, it still serves as a useful reference point.  
+  
+Here is Method 2, with the feature for temperature included  
+  
+![Seq9](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq9.PNG)  
 
-#### 3. Predicting multi-period sequences of a defined length  
+#### Method 3. Predicting multi-period sequences of a defined length  
 In this example, we need to chage some of our starting assumptions slightly. Let's assume our predicting sequence is now 3 periods, and we want to predict a sequence of 2 periods.  
 
 The row 'Demand 1.1' shows that the values in time periods 1 to 3 will be used to predict time period 4. This is a prediction made entirely using known data. Now for the next prediction, 'Demand 1.2', we will use the known values in time periods 2 & 3 and the previously predicted value of time period 4, to predict time period 5. 
@@ -113,9 +130,13 @@ This process will reset as we predict 'Demand 2.1', where a fresh set of known v
 
 ![Seq5](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq5.PNG)  
 This method of prediction is somewhat of a middle ground between Methods 1 and 2, where the future predictions are more difficult than simply predicting the next step, but not as difficult as predicting the entire sequence using only a starting seed of known values.  
-  
-For each of these different prediction tyes, the predicted values can still be compared to their known values during model validation.
 
+Here is Method 3, with the feature for temperature included  
+  
+![Seq10](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq10.PNG)  
+  
+For each of these different prediction tyes, the predicted values can still be compared to their known values during model validation.  
+  
 ### Preparing the data  
 For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
   
@@ -257,7 +278,7 @@ The comments in the code provide an overview of the functions key steps.
 def predict_point_by_point(model, data):
     
     # Use the model to make predictions
-    # Return the result in the correct shape
+    # Return the result in the correct shape  
 	predicted = model.predict(data)
     predicted = np.reshape(predicted, (predicted.size,))
     
@@ -328,7 +349,21 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
 
 The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
 
+### Modelled outcomes  
+One last, but important function is to take the predicted values and revert them back to their original scale. This can be done with the *return_original_scale* function below.  
 
+```python
+
+# Undo the effects of normalisation
+def return_original_scale(norm_val, base_val):
+    
+    rescaled = (norm_val + 1) * base_val
+    
+    return rescaled
+
+```
+  
+#### Method 1 results
 
 
 
