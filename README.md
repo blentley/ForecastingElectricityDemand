@@ -199,8 +199,11 @@ def split_data(inputData, partitionPoint):
 
 ```
   
-#### 4. Shaping the data
-
+#### 4. Shaping the data  
+The last step before modelling is to define the shape of the data. Here we specify three dimensions of the data:  
++ The number of observations / sequences  
++ The length of the sequence  
++ The number of features / dimensions
 ```python
 
 # Define a function for shaping the data into appropriately dimensioned tensors for Keras
@@ -213,14 +216,119 @@ def shape_data(inputData, featureNum):
 
 ```
 
- 
-
 ### Assembling the model  
-I used the LSTM  
+The next step is where we get to assemble the model using Keras. In the function code below, there are some key parts to point out:  
++ model = Sequ
+
+```python
+
+def build_model(layers, inputTrain):
+    
+    model = Sequential()
+   
+    model.add(LSTM(layers[0], input_shape=(inputTrain.shape[1], inputTrain.shape[2]), return_sequences=True))
+    model.add(LSTM(layers[1]))
+    
+    model.add(Dense(layers[2]))
+    model.add(Activation("linear"))
+
+    start = time.time()
+    model.compile(loss="mse", optimizer="rmsprop")
+    
+    print("> Compilation Time : ", time.time() - start)
+    
+    return model
+
+
+```  
+
+
+### Using the model to make predictions  
+In this step, I've included the functions used to make predictions according to the methods described above:  
++ Method 1 - predict_point_by_point  
++ Method 2 - predict_sequence_full  
++ Method 3 - predict_sequences_multiple  
+  
+
+
+```python
+
+def predict_point_by_point(model, data):
+    
+	predicted = model.predict(data)
+    predicted = np.reshape(predicted, (predicted.size,))
+    
+    return predicted
+
+```
+
+```python
+
+def predict_sequence_full(model, data, window_size):
+     
+    # Begin with starting point
+    curr_frame = data[0]
+    
+    # Create an empty vector to hold predictions
+    predicted = []
+    
+    # Loop over the length of the X_train dataset
+    for i in range(len(data)):
+
+        # Append the result to the predicted vector
+               
+        predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
+        
+        # Make space in the predicting frame for the new prediction
+        curr_frame = curr_frame[1:]
+        
+        # Insert the prediction to the end of the frame used for making predictions
+        curr_frame = np.insert(curr_frame # Insert into the current frame
+                               , [window_size - 1] # The position to insert
+                               , predicted[-1] # The values to insert (the latest prediction)
+                               , axis = 0) # The row / col wise insert
+    
+    return predicted
+
+```
+
+```python
+
+def predict_sequences_multiple(model, data, window_size, prediction_len):
+    
+    # Create an empty vector of predicted sequences
+    prediction_seqs = []
+    
+    # Iterate over multiple chunks of the data
+    for i in range(int(len(data) / prediction_len)):
+        
+        # Create a sequence used for prediction
+        curr_frame = data[i * prediction_len]
+            
+        # Create an array to store predictions made
+        predicted = []
+        
+        # The second loop is to iterate through the prediction length
+        for j in range(prediction_len):
+            
+            predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
+            curr_frame = curr_frame[1:]
+            curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
+            
+        prediction_seqs.append(predicted)
+        
+    return prediction_seqs
+
+```
 
 
 The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
 
-## Evaluation and Conclusions
 
+
+
+
+
+
+## Evaluation and Conclusions
 
