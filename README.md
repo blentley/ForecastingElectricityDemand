@@ -1,6 +1,6 @@
 ## Project Introduction
 
-The purpose of this repository is to share with you my workflow initial attempt at predicting electricity demand for the NSW National Energy Market (NEM) region.  
+The purpose of this repository is to share with you my workflow initial attempt at predicting electricity demand using a LSTM neural network for the NSW National Energy Market (NEM) region. After reading about the successes other applications had achieved using LSTMs for sequence type predictions, I was keen to give them a try on this time series problem.  
   
 This readme will give a flavour for the process I have undertaken to model this demand as it's a simplification of the detail in the full version. The full suite of scripts are also available in this repository and I will make reference to them in the text below.
   
@@ -67,14 +67,51 @@ http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml
 Let's remove the time-series sequencing and plot temperature against demand to understand the relationship independent of time:  
 ![DemandTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DemandTemp.PNG)  
   
-We can see a clear U-shape forming between electricity demand and temperature. As temperature rises, people use more air conditioning, so demand rises. Simiarly, as temperature falls, people use more heating, so demand rises. There remains a 'sweet spot' of mild temperature between approximately 17 and 21 degrees Celsius where demand is lowest. The plot above has split the points by Weekdays and Weekends to show the slightly lower demand on weekends mostly due to businesses requiring less energy as they're not operational.  
+We can see a clear U-shape forming between electricity demand and temperature. As temperature rises, people use more air conditioning, so demand rises. Simiarly, as temperature falls, people use more heating, so demand rises. There remains a 'sweet spot' of mild temperature between approximately 17 and 21 degrees Celsius where demand is lowest. The plot above has split the points by Weekdays and Weekends to show the comparatively lower demand on weekends due to large sections of the businesses sector not operating.  
+
+The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb. There is also an equivalent HTML output.  
+
+## Approach to modelling  
+I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
+
+I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used three different methods of making subsequent predictions. These are best illustrated with some simple, visual examples below.  
+
+Let's begin with an 11 period time-series of demand. Think is the format of the raw data.  
+![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
+
+The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences will be equivalent to observations as we train the model.  
+If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.   
+![Seq2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq2.PNG)  
+*How long should a sequence be?*  
+It depends on your application, and probably a lot of trial and error.  
   
-The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb and the equivalent HTML outputs  
-  
-## Preparing the data  
+
+Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
+
+![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
+
+![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
+
+![Seq5](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq5.PNG)  
+
+
+
+### Preparing the data  
+For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
+
 In order to get 
 
-## Modelling
++ Single-step prediction - make a prediction of the next period, and  
++ Multi-step, full sequence prediction -  
++ Multi-step, partial sequence prediction -   
+ 
 
-## Evaluation
+### Assembling the model  
+I used the LSTM  
+
+
+The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
+
+## Evaluation and Conclusions
+
 
