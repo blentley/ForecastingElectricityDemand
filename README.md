@@ -89,18 +89,24 @@ If we set a sequence length of 6 periods, then we need to transform this time se
 It depends on your application, and probably a lot of trial and error.  
   
 Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
-#### Predicting the next value, continually using known data  
-In this type of single-step prediction, sequences of known demand data are used to predict LP (last prediction). These single predictions can be compared to their known values during evaluation.  
+
+#### 1. Predicting the next value, using known data  
+In this type of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
 
-#### Predicting the next value over the entire sequence  
+#### 2. Predicting the entire sequence, using only a starting seed of known data  
 
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
 
+#### 3. Predicting multi-period sequences of a defined length  
+In this example, we need to chage some of our starting assumptions slightly. Let's assume our predicting sequence is now 3 periods, and we want to predict a sequence of 2 periods.  
+The row 'Demand 1.1' shows that the values in time periods 1 to 3 will be used to predict time period 4. This is a prediction made entirely using known data. Now for the next prediction, 'Demand 1.2', we will use the known values in time periods 2 & 3 and the previously predicted value of time period 4, to predict time period 5. This process will reset as we predict 'Demand 2.1', where a fresh set of known values will be used to make a prediction for time period 6.  
+
 ![Seq5](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq5.PNG)  
-
-
+This method of prediction is somewhat of a middle ground between Methods 1 and 2, where the future predictions are more difficult than simply predicting the next step, but not as difficult as predicting the entire sequence using only a starting seed of known values.  
+  
+For each of these different prediction tyes, the predicted values can still be compared to their known values during model validation.
 
 ### Preparing the data  
 For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
