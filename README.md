@@ -106,7 +106,7 @@ In this method of single-step prediction, sequences of known demand data are use
 
 This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slightly adjustments from it's known previous value and only be slightly incorrect each time. There's probably not a value for predicting the next period, however it's a useful reference.  
   
-Here is Method 1, with the feature for temperature included  
+Here is Method 1, with the feature for temperature included for three iterations  
   
 ![Seq8](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq8.PNG)  
 
@@ -117,7 +117,7 @@ In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data t
 
 This method of prediction is the least generous (and likely to result in the highest error) since we're only feeding the model limited information and relying on accurate predictions to sustain future predictions. Errors would continue to be amplified as the sequence progresses. However, it still serves as a useful reference point.  
   
-Here is Method 2, with the feature for temperature included  
+Here is Method 2, with the feature for temperature included for three iterations  
   
 ![Seq9](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq9.PNG)  
 
@@ -131,7 +131,7 @@ This process will reset as we predict 'Demand 2.1', where a fresh set of known v
 ![Seq5](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq5.PNG)  
 This method of prediction is somewhat of a middle ground between Methods 1 and 2, where the future predictions are more difficult than simply predicting the next step, but not as difficult as predicting the entire sequence using only a starting seed of known values.  
 
-Here is Method 3, with the feature for temperature included  
+Here is Method 3, with the feature for temperature included for two iterations  
   
 ![Seq10](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq10.PNG)  
   
