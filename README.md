@@ -290,7 +290,7 @@ In this step, I've included the functions used to make predictions according to 
 + Method 2 - mv_predict_sequence_full  
 + Method 3 - mv_predict_sequences_multiple  
   
-The comments in the code provide an overview of the functions key steps.  
+The comments in the code provide an overview of the functions key steps. Each of the functions return an array of predicted values for the test set.  
   
 ```python
 
@@ -309,7 +309,7 @@ def predict_point_by_point(model, data):
 ```python
 
 def mv_predict_sequence_full(model, data, window_size, excess_predictors):
-       
+    
     # Begin with starting point
     curr_frame = data[0]
     
@@ -318,32 +318,50 @@ def mv_predict_sequence_full(model, data, window_size, excess_predictors):
     
     # Loop over the length of the X_train dataset
     for i in range(len(data)):
-
-        # Append the result to the predicted vector         
+        
+        # Append the result to the predicted vector        
         predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
         
         new_obs = [predicted[-1], excess_predictors[i]]
-        
+
         # Make space in the predicting frame for the new prediction
         curr_frame = curr_frame[1:]
-
-        # Insert the prediction to the end of the frame used for making predictions
-        curr_frame = np.insert(curr_frame # Insert into the current frame
-                               , [window_size - 1] # The position to insert
+        
+        # Insert the prediction and extra predictors to the end of the frame used for making predictions
+        curr_frame = np.insert(curr_frame
+                               , [window_size - 1] 
                                , new_obs
                                , axis = 0) 
     
     return predicted
 
 ```
+I ran the *mv_predict_sequence_full* function using the following input parameters:  
+  
++ X_test - sequences of predictors from the test set  
++ modelMSS -  the model object required to make predictions  
++ inputSeqLen - this is your starting sequence length. In my case, I used 1008, which was 21 days (3 weeks)  
++ y_test_x - this is an array of the additional predictors (in this case, temperature) to supplement the predicted demand value as the window is shifted forward  
+
+```python
+
+predictMMS = mv_predict_sequence_full(data = X_test
+                                      , model = modelMSS
+                                      , window_size = inputSeqLen
+                                      , excess_predictors = y_test_x)
+
+```
     
 ```python
 
-def mv_predict_sequences_multiple(model, data, window_size, prediction_len):
-  
+def mv_predict_sequences_multiple(model, data, window_size, prediction_len, excess_predictors):
+    
     # Create an empty vector of predicted sequences
     prediction_seqs = []
     
+    # Create a counter for the excess x predictors required
+    xs = 0
+
     # Iterate over multiple chunks of the data
     for i in range(int(len(data) / prediction_len)):
         
@@ -357,13 +375,38 @@ def mv_predict_sequences_multiple(model, data, window_size, prediction_len):
         for j in range(prediction_len):
             
             predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
-
+            
+            new_obs = [predicted[-1], excess_predictors[xs]]
+            
             curr_frame = curr_frame[1:]
-            curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
-        
+                
+            # Append the latest prediction as the last value in the window
+            curr_frame = np.insert(curr_frame
+                                   , [window_size-1]
+                                   , new_obs
+                                   , axis=0)
+            xs = xs + 1
+                            
         prediction_seqs.append(predicted)
         
     return prediction_seqs
+
+```
+I ran *mv_predict_sequences_multiple* function using the following input parameters:  
+  
++ X_test - sequences of predictors from the test set  
++ modelMSS -  the model object required to make predictions  
++ inputSeqLen - this is your sequence length. In my case, I used 1008, which was 21 days (3 weeks)  
++ inputPredLen - this is the desired number of predictions to be made. In my case, I specified a prediction length of 48 periods (1 day)  
++ y_test_x - this is an array of the additional predictors (in this case, temperature) to supplement the predicted demand value as the window is shifted forward  
+
+```python
+
+predictMMS = mv_predict_sequences_multiple(data = X_test
+                                        , model = modelMSS
+                                        , window_size = inputSeqLen
+                                        , prediction_len = inputPredLen
+                                        , excess_predictors = y_test_x)
 
 ```
 
@@ -401,6 +444,19 @@ def return_original_scale_multiple(norm_val, base_val, prediction_len):
     return rescaled, newRowDim
 
 ```
+I ran the *return_original_scale_multiple* function with the following input parameters:  
+
++ predictMMS - the normalised predictions  
++ referenceVal - the reference data required to un-normalise the predictions  
++ inputPredLen - the length of time I specified predictions for (in this case it was 48 periods)  
+
+```python
+
+predictMMS_scaled, newRowDim = return_original_scale_multiple(norm_val = predictMMS
+                                                              , base_val = referenceVal
+                                                              , prediction_len = inputPredLen)
+
+```
   
 The results presented below are plots showing the actual values of demand and the predicted values of demand for the test set. I've also included a subsection of these results for clearer viewing.  
 
@@ -410,13 +466,13 @@ As expected the predicted values follow quite closely to the observed values. Th
   
 ![M1Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1FullResults.PNG)  
 **Partial results**  
-
+  
 ![M1Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1SectionResults.PNG)  
 
 #### Method 2 results  
 This method was always going to be the most difficult of the prediction methods, and it is reflected in the RMSE of 1647. The plot shows that the prediction doesn't follow the trends of the observed values closely at all, and converges into a narrow range with some noise.  
 **Full results**  
-
+  
 ![M2Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2FullResults.PNG)  
 
 **Partial results**  
@@ -430,7 +486,7 @@ This method was anticipated to be the middle ground of Methods 1 and 2, and it w
 ![M3Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3FullResults.PNG)  
 
 **Partial results**  
-
+  
 ![M3Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3SectionResults.PNG)  
 
 #### The impact including temperature as a predictor  
