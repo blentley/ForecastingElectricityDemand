@@ -405,7 +405,7 @@ def return_original_scale_multiple(norm_val, base_val, prediction_len):
 The results presented below are plots showing the actual values of demand and the predicted values of demand for the test set. I've also included a subsection of these results for clearer viewing.  
 
 #### Method 1 results  
-As expected the predicted values follow quite closely to the observed values. The root mean squared error I've used for evaluation is 337.65  
+As expected the predicted values follow quite closely to the observed values. The root mean squared error (RMSE) I've used for evaluation is 279, the lowest of the three methods.  
 **Full results**  
   
 ![M1Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1FullResults.PNG)  
@@ -413,7 +413,8 @@ As expected the predicted values follow quite closely to the observed values. Th
 
 ![M1Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1SectionResults.PNG)  
 
-#### Method 2 results
+#### Method 2 results  
+This method was always going to be the most difficult of the prediction methods, and it is reflected in the RMSE of 1647. The plot shows that the prediction doesn't follow the trends of the observed values closely at all, and converges into a narrow range with some noise.  
 **Full results**  
 
 ![M2Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2FullResults.PNG)  
@@ -422,16 +423,20 @@ As expected the predicted values follow quite closely to the observed values. Th
   
 ![M2Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2SectionResults.PNG)  
 
-#### Method 3 results
+#### Method 3 results  
+This method was anticipated to be the middle ground of Methods 1 and 2, and it was confirmed by the RMSE of 1057. 
 **Full results**  
   
 ![M3Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3FullResults.PNG)  
 
 **Partial results**  
-  
+
 ![M3Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3SectionResults.PNG)  
 
-
+#### The impact including temperature as a predictor  
+The results presented above were for models developed with both historical demand and air temperature used as predictors. The understand the impact of including temperature as a predictor of electricity demand, I have summarised the RMSE for modelled scenarios across the three scenarios in the table below.  
+  
+![Results](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Results.PNG)  
 
 ## Final thoughts & conclusions
 
