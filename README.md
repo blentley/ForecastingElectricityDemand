@@ -76,6 +76,11 @@ The script where I've done my exploratory analysis can be found in Scripts/Explo
 I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
 
 I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used three different methods of making subsequent predictions. These are best illustrated with some simple, visual examples below.  
+  
+To understand the colour scheme:  
++ Data enclosed by green borders are predictors  
++ Data enclosed by blue borders predictions to be made  
++ I've also left predictions that become predictors in blue text  
 
 #### Adding dimensions  
 The examples below begin by illustrating a scenario where demand was the only input into making predictions. To further complicate matters, air temperature will be introduced as an additional dimension and the end of each method. This is where I spent the most time trying to get my head around a multi-dimensional space, so I hope these are helpful.    
@@ -256,8 +261,19 @@ def shape_data(inputData, featureNum):
 ```
   
 ### Assembling the model  
-The next step is where we get to assemble the model using Keras. In the function code below, there are some key parts to point out:  
-+ model = Sequ
+The next step is where we get to assemble the model using Keras.  
+
+Let's first understand what are the inputs:  
++ layers - this is a list of numbers which I specify how many neurons I want in each layer. In my case, I have specified [25, 10, 1], so my first layer will have 25 hours, my second layer will have 10, and my final output layer will have 1 (i.e. my predicted value).  
++ inputTrain - here I pass in X_train, not for training, but to get the dimensions of the data that the model will train on   
+  
+
+Now let's break down the components of this function:  
++ Assigning a variable 'model' to Sequential() initiates a sequential model class, which can be thought of as a linear stack of layers.  
++ Next we add layers which for the first one I've specified to be a LSTM layer. In this first layer, we need to specify what shape the data coming in will be, which can be done with the *input_shape* parameter. I then add the second hidden layer which will contain 10 neurons.  
++ I then add the last layer ('Dense'), which will be the output layer.    
++ For simplicity, I've specified the activation function of the neurons to be linear.  
++ Finally, to compile the model, I specify the loss function as the mean-squared error which is what the network will use to adjust its weights and aim to minimise through iteration during training.   
 
 ```python
 
