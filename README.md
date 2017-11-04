@@ -405,21 +405,30 @@ def return_original_scale_multiple(norm_val, base_val, prediction_len):
 The results presented below are plots showing the actual values of demand and the predicted values of demand for the test set. I've also included a subsection of these results for clearer viewing.  
 
 #### Method 1 results  
+As expected the predicted values follow quite closely to the observed values. The root mean squared error I've used for evaluation is 337.65  
+**Full results**  
+  
 ![M1Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1FullResults.PNG)  
-
+**Partial results**  
 
 ![M1Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1SectionResults.PNG)  
 
+#### Method 2 results
+**Full results**  
 
 ![M2Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2FullResults.PNG)  
 
-
+**Partial results**  
+  
 ![M2Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2SectionResults.PNG)  
 
-
+#### Method 3 results
+**Full results**  
+  
 ![M3Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3FullResults.PNG)  
 
-
+**Partial results**  
+  
 ![M3Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3SectionResults.PNG)  
 
 
