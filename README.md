@@ -140,82 +140,100 @@ For each of these different prediction tyes, the predicted values can still be c
 ### Preparing the data  
 For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
   
-The steps for data preparation have been developed as a series of functions, which I'll run through below. These functions prepare the data for the univariate scenario, where historical demand is the only input. Some of the functions required further adaptatation for multi-dimensional input data, but the concept was largely the same. They are prefixed by *mv_* in Scripts/PredictingDemand.ipynb
+The steps for data preparation have been developed as a series of functions, which I'll run through below. These functions are capable of processing data for univariate and multivariate modelling.
 
 #### 1. Transform raw data into sequences using *prep_data*  
 In this function, our input data is transformed into sequences *(seq_len)*, before being returned as an array.  
   
 ```python
 
-def prep_data(inputData, seq_len):
+def mv_prep_data(inputData, seq_len):
 
     # Determine the length of the window
     sequence_length = seq_len + 1
+
     # Create an empty vector for the result
     result = []
+    
     for index in range(len(inputData) - sequence_length):
         
-        # Append slices of data together i.e 
+        # Append slices of data together
         result.append(inputData[index: index + sequence_length])
-  
+
     # Convert the result into a numpy array (from a list)
     result = np.array(result)
     
-    return result
+    return result 
 
 ```
   
 #### 2. Normalise the data using *normalise_windows*
 This function is re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in values.  
   
-I've included in the return *base_val* is the starting value of each sequence before normalisation. I keep this handy for when it comes time to return the data back to its original scale, I have the reference point to perform this calculation.  
+I've included in the return *base_data* are the starting values of each sequence before normalisation. I need this for when it comes time to return the data back to its original scale, I have the reference point to unwind the normalisation.  
 
 ```python
 
-def normalise_windows(window_data):
+def mv_normalise_windows(window_data):
+    
     # Create an empty vector for the result
     normalised_data = []
-    base_val = []
-    # Iterate through the windows, normalise and append
+
+    # Create an empty vector for the values required to undo the normalisation
+    base_data = []
+    
+    # Iteration is over the sequences passed in
     for window in window_data:
-        base_val_data = window[0]
-        base_val.append(base_val_data)
-        normalised_window = [((float(p) / float(window[0])) - 1) for p in window]
-        normalised_data.append(normalised_window)
         
+        # Store the base values
+        base_val = window[0]
+        base_data.append(base_val)    
+
+        # Perform the normlisation
+        normalised_feature = [((window[i] / window[0]) - 1) for i in range(window.shape[0])] 
+        normalised_data.append(normalised_feature)
+
     normalised_data = np.array(normalised_data)
-    base_val = np.array(base_val)
-        
-    return normalised_data, base_val
+    base_data = np.array(base_data)
+    
+    return normalised_data, base_data
 
 ```
   
 #### 3. Partition the data into training and test sets  
-This function will take the normalised data and return four objects:  
+This function will take the normalised data and a point to split the dataset, and return six objects:  
 + x_train - an array of sequences used for making predictions  
-+ y_train - an array of values that the model will learn how to predict  
++ y_train_y - an array of values that the model will learn how to predict  
++ y_train_x - an array of predictions aligned corresponding to the time periods being predicted, which the model needs for prediction 
 + x_test - an array of sequences that will be used for making predictions during validation  
-+ y_test - an array of values that we will compare against predictions during validation  
++ y_test_y - an array of values that we will compare against predictions during validation  
++ y_test_x - an array of predictors aligned to the corresponding time periods being predicted, which the model needs for prediction  
+  
+In addition, this function will also return *row*, which is the partitioning point of the dataset. Use this to find the correct time-series value for plotting on the x-axis later on.  
   
 ```python
 
-# Define a function for partition data into training and test sets
-def split_data(inputData, partitionPoint):
+def mv_split_data(inputData, partitionPoint, outcomeCol):
     
     # Develop a partition to split the dataset into training and test set
     row = round(partitionPoint * inputData.shape[0])
  
-    #np.random.shuffle(train)
     # Create training sets 
     train = inputData[:int(row), :]
     x_train = train[:, :-1]
     y_train = train[:, -1]
     
+    y_train_y = y_train[: , outcomeCol]
+    # We should also keep the other variable values
+    y_train_x = y_train[: , (outcomeCol + 1)]
+    
     # Create testing sets
     x_test = inputData[int(row):, :-1]
     y_test = inputData[int(row):, -1]
+    y_test_y = y_test[: , outcomeCol]
+    y_test_x = y_test[:, (outcomeCol + 1)]
     
-    return [x_train, y_train, x_test, y_test, row]
+    return [x_train, y_train_y, x_test, y_test_y, row, y_train_x, y_test_x]
 
 ```
   
@@ -247,7 +265,9 @@ def build_model(layers, inputTrain):
     
     model = Sequential()
    
-    model.add(LSTM(layers[0], input_shape=(inputTrain.shape[1], inputTrain.shape[2]), return_sequences=True))
+    model.add(LSTM(layers[0]
+    	, input_shape=(inputTrain.shape[1], inputTrain.shape[2])
+    	, return_sequences=True))
     model.add(LSTM(layers[1]))
     
     model.add(Dense(layers[2]))
@@ -267,8 +287,8 @@ def build_model(layers, inputTrain):
 ### Using the model to make predictions  
 In this step, I've included the functions used to make predictions according to the methods described above:  
 + Method 1 - predict_point_by_point  
-+ Method 2 - predict_sequence_full  
-+ Method 3 - predict_sequences_multiple  
++ Method 2 - mv_predict_sequence_full  
++ Method 3 - mv_predict_sequences_multiple  
   
 The comments in the code provide an overview of the functions key steps.  
   
@@ -288,8 +308,8 @@ def predict_point_by_point(model, data):
   
 ```python
 
-def predict_sequence_full(model, data, window_size):
-     
+def mv_predict_sequence_full(model, data, window_size, excess_predictors):
+       
     # Begin with starting point
     curr_frame = data[0]
     
@@ -299,18 +319,19 @@ def predict_sequence_full(model, data, window_size):
     # Loop over the length of the X_train dataset
     for i in range(len(data)):
 
-        # Append the predicted result to the predicted vector
-               
+        # Append the result to the predicted vector         
         predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
+        
+        new_obs = [predicted[-1], excess_predictors[i]]
         
         # Make space in the predicting frame for the new prediction
         curr_frame = curr_frame[1:]
-        
+
         # Insert the prediction to the end of the frame used for making predictions
         curr_frame = np.insert(curr_frame # Insert into the current frame
                                , [window_size - 1] # The position to insert
-                               , predicted[-1] # The values to insert (the latest prediction)
-                               , axis = 0) # The row / col wise insert
+                               , new_obs
+                               , axis = 0) 
     
     return predicted
 
@@ -318,8 +339,8 @@ def predict_sequence_full(model, data, window_size):
     
 ```python
 
-def predict_sequences_multiple(model, data, window_size, prediction_len):
-    
+def mv_predict_sequences_multiple(model, data, window_size, prediction_len):
+  
     # Create an empty vector of predicted sequences
     prediction_seqs = []
     
@@ -335,11 +356,11 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
         # The second loop is to iterate through the prediction length
         for j in range(prediction_len):
             
-            # Keep appending predictions
             predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
+
             curr_frame = curr_frame[1:]
             curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
-
+        
         prediction_seqs.append(predicted)
         
     return prediction_seqs
@@ -350,24 +371,58 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
 The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
 
 ### Modelled outcomes  
-One last, but important function is to take the predicted values and revert them back to their original scale. This can be done with the *return_original_scale* function below.  
+One last, but important function is to take the predicted values and revert them back to their original scale. This can be done with the *return_original_scale_multiple* function below.  
 
 ```python
 
-# Undo the effects of normalisation
-def return_original_scale(norm_val, base_val):
+def return_original_scale_multiple(norm_val, base_val, prediction_len):
     
-    rescaled = (norm_val + 1) * base_val
+    # Create an empty an empty array
+    seq_base = []
+
+    # First loop over number of sequences
+    for i in range(int(len(base_val) / prediction_len)):
+        
+        # Second loop through the number of predictions
+        # Repeat the reference value
+        for j in range(prediction_len):
+            seq_base.append(base_val[i * prediction_len])
+            
+    seq_base = np.array(seq_base)
+            
+    # Reshape the normalised predictions
+    # Reduce the dimensionality of the dataset, back into a single array
+    newRowDim = norm_val.shape[0] * norm_val.shape[1]
+    norm_val_reshaped = norm_val.reshape(newRowDim)
+
+    # Cross multiply the two arrays to rescale the predictions
+    rescaled = seq_base * (norm_val_reshaped + 1)
     
-    return rescaled
+    return rescaled, newRowDim
 
 ```
   
-#### Method 1 results
+The results presented below are plots showing the actual values of demand and the predicted values of demand for the test set. I've also included a subsection of these results for clearer viewing.  
+
+#### Method 1 results  
+![M1Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1FullResults.PNG)  
+
+
+![M1Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M1SectionResults.PNG)  
+
+
+![M2Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2FullResults.PNG)  
+
+
+![M2Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2SectionResults.PNG)  
+
+
+![M3Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3FullResults.PNG)  
+
+
+![M3Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3SectionResults.PNG)  
 
 
 
-
-
-## Evaluation and Conclusions
+## Final thoughts & conclusions
 
