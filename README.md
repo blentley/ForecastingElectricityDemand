@@ -21,7 +21,7 @@ The Australian Energy Market Operator (AEMO) makes a number of short and long te
  	+ keras with tensorflow as the backend
  + PostgreSQL 9.6.1  
   
-This analysis will focus on the NSW NEM region and air temperature at Bankstown Airport (chosen for its somewhat geographical 'average' of Sydney, NSW).
+This analysis will focus on the NSW NEM region and air temperature at Bankstown Airport (chosen for its somewhat geographical 'average' of Sydney, NSW) for the 2016 calendar year.
 
 ### Acknowledgements  
 I couldn't have made it this far without the knowledge shared by Dr Jason Brownlee and Jakob Aungiers, whose blogs were thoughtfully curated and easy to read. Respective links below:  
@@ -424,7 +424,7 @@ This method was always going to be the most difficult of the prediction methods,
 ![M2Section](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M2SectionResults.PNG)  
 
 #### Method 3 results  
-This method was anticipated to be the middle ground of Methods 1 and 2, and it was confirmed by the RMSE of 1057. 
+This method was anticipated to be the middle ground of Methods 1 and 2, and it was confirmed by the RMSE of 1057. Given the task of predicting the next 48 periods (24 hours), looking at the plot of full results it seems to be able to follow the trend, but consistently underpredicts the values.    
 **Full results**  
   
 ![M3Full](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/M3FullResults.PNG)  
@@ -438,5 +438,15 @@ The results presented above were for models developed with both historical deman
   
 ![Results](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Results.PNG)  
 
-## Final thoughts & conclusions
+The results indicate the addition of temperature as a predictor has a positive impact on predictive capability across all three methods.  
 
+## Final thoughts & conclusions
+I have presented my very preliminary exploration of using LSTMs to predict electricity demand.  
+  
+I'll leave you with some ideas I had on how this could be improved:  
++ Try to optimise the structure of the LSTM - The model I've specified above is an arbitrary combination of hidden layers, neurons and epochs, but could be optimised through a parameter search at scale.  
++ Use the LSTM to natively predict multiple periods - in this guide, I have specified one output from the LSTM before using methods of shifiting windows forward to make longer predictions. I'd be interested to see what the LSTM would return if it is told to return an x period prediction.  
++ Streamlining functions - you'll see in the notebooks attached, I have used separate functions for my univariate and multivariate modelling. The multivariate functions should be applicable for scenarios of all dimensions.  
++ Try different pre-processing of the data - I've chosen an arbitrary sequence length of 21 days, but this is not optimised. [Research](http://www.aemc.gov.au/getattachment/924537dd-1f48-4550-a134-78b3b7d3ba70/University-of-Wollongong,-Evaluation-of-Neural-Net.aspx) done by the University of Wollongong suggests a longer time period capturing seasonality could be significant.  
++ Include a longer 
++ Try additional predictors - This could take the form of additional weather stations, additional climate features (humidity, rainfall) or smart meter data.  
