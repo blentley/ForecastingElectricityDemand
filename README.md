@@ -273,7 +273,7 @@ Now let's break down the components of this function:
 + Next we add layers which for the first one I've specified to be a LSTM layer. In this first layer, we need to specify what shape the data coming in will be, which can be done with the *input_shape* parameter. I then add the second hidden layer which will contain 10 neurons.  
 + I then add the last layer ('Dense'), which will be the output layer.    
 + For simplicity, I've specified the activation function of the neurons to be linear.  
-+ Finally, to compile the model, I specify the loss function as the mean-squared error which is what the network will use to adjust its weights and aim to minimise through iteration during training.   
++ Finally, to compile the model, I specify the loss function as the mean-squared error which is what the network will aim to minimise by adjusting its weights during training.   
 
 ```python
 
@@ -296,9 +296,15 @@ def build_model(layers, inputTrain):
     
     return model
 
-
 ```  
+To use this model, I need to give it some data and other instructions for training (shown below).  
 
+```python
+
+fitMSS = modelMSS.fit(X_train, y_train, batch_size = 512, epochs=inputEpochs, validation_split = 0.05)
+
+```
+With the model trained, we can now use it for making predictions on unseen test data.
 
 ### Using the model to make predictions  
 In this step, I've included the functions used to make predictions according to the methods described above:  
