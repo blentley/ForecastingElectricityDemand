@@ -79,12 +79,12 @@ The script where I've done my exploratory analysis can be found in Scripts/Explo
 ## Approach to modelling  
 I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
 
-I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used two additional methods of making subsequent predictions by shifting a window of values forward. Confused?. Let me illustrate with some simple, visual examples below.  
+I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a single prediction of the next period, however I used two additional methods to make multiple period predictions by shifting a window of values forward. Confused? Let me illustrate with some simple, visual examples below.  
   
 First, a guide to the colour scheme:  
 + Data enclosed by green borders are predictors  
 + Data enclosed by blue borders predictions to be made  
-+ I've also left predictions that become predictors in blue text  
++ I've also left predictions that become predictors as the window shifts in blue text  
 
 #### Adding dimensions  
 The examples below begin by illustrating a scenario where demand was the only input into making predictions. To further complicate matters, air temperature will be introduced as an additional dimension and the end of each method. This is where I spent the most time trying to get my head around a multi-dimensional space, so I hope these are helpful.    
