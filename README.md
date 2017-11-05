@@ -235,12 +235,12 @@ The returned results are normalised sequences and a reference array of base valu
   
 #### 3. Partition the data into training and test sets  
 This function will take the normalised data and a point to split the dataset, and return six objects:  
-+ x_train - an array of sequences used for making predictions  
-+ y_train_y - an array of values that the model will learn how to predict  
-+ y_train_x - an array of predictions aligned corresponding to the time periods being predicted, which the model needs for prediction 
-+ x_test - an array of sequences that will be used for making predictions during validation  
-+ y_test_y - an array of values that we will compare against predictions during validation  
-+ y_test_x - an array of predictors aligned to the corresponding time periods being predicted, which the model needs for prediction  
++ x_train - an array of sequences used for making predictions.  
++ y_train_y - an array of values that the model will learn to predict.  
++ y_train_x - an array of additional predictors aligned to the newly predicted demand values. Not required in training. 
++ x_test - an array of sequences that will be used for making predictions during validation.  
++ y_test_y - an array of values that we will compare against predictions made by the model during validation. These are the true outcome values.  
++ y_test_x - an array of additional predictors aligned to the newly predicted demand values, which the model needs for subsequent predictions.  
   
 In addition, this function will also return *row*, which is the partitioning point of the dataset. Use this to find the correct time-series value for plotting on the x-axis later on.  
   
@@ -269,7 +269,7 @@ def mv_split_data(inputData, partitionPoint, outcomeCol):
     return [x_train, y_train_y, x_test, y_test_y, row, y_train_x, y_test_x]
 
 ```
-I use this function by passing in the following parameters:  
+I use this function by passing in the following to the parameters:  
 + dataNorm - the normalised sequences from the previous step.  
 + inputPartition - the % to allocate to model training. Here I've specified 75% of the data to be dedicated for model training.  
 + outcomeCol - the column index which has the variable we're aiming to predict.  
@@ -325,8 +325,8 @@ To use this model, I need to give it some data and other instructions for traini
 + X_train - this is the prepared sequences of predictors for the model.  
 + y_train - this is the array of true outcome values that the model will try to predict.  
 + batch_size -  this is the size of the data to process in batches within each epoch. Using batches will be more efficient than passing single sequences each time.  
-+ inputEpochs - this is the number of life-cycles of this neural network, where one iteration passes all data through the network.  
-+ validation_split - this is the proportion of the data to be held out for validation purposes.  
++ inputEpochs - this is the number of training iterations of this neural network, where one iteration has passed all data through the network.  
++ validation_split - this is the proportion of the data to be held out for validation purposes during training.  
 
 ```python
 
@@ -336,13 +336,11 @@ fitMSS = modelMSS.fit(X_train, y_train, batch_size = 512, epochs=inputEpochs, va
 With the model trained, we can now use it for making predictions on unseen test data.
 
 ### Using the model to make predictions  
-In this step, I've included the functions used to make predictions according to the methods described above:  
-+ Method 1 - predict_point_by_point  
-+ Method 2 - mv_predict_sequence_full  
-+ Method 3 - mv_predict_sequences_multiple  
+In this step, I've included the functions used to make predictions according to the three methods described above.  
+    
+The comments in the code provide an overview of the functions key steps. Each of the functions return a simple array of predicted values for comparison to the true values in the test set.  
   
-The comments in the code provide an overview of the functions key steps. Each of the functions return an array of predicted values for comparison to the true values in the test set.  
-  
+#### Method 1 - predict_point_by_point  
 ```python
 
 def predict_point_by_point(model, data):
@@ -356,7 +354,18 @@ def predict_point_by_point(model, data):
     return predicted
 
 ```
+I ran the *predict_point_by_point* function with the following inputs:  
++ X_test - sequences of predictors from the test set  
++ modelMSS -  the model object required to make predictions  
+
+```python
+
+# Make single step predictions with the model
+predictMSS = predict_point_by_point(data = X_test, model = modelMSS)
+
+```
   
+#### Method 2 - mv_predict_sequence_full    
 ```python
 
 def mv_predict_sequence_full(model, data, window_size, excess_predictors):
@@ -387,8 +396,7 @@ def mv_predict_sequence_full(model, data, window_size, excess_predictors):
     return predicted
 
 ```
-I ran the *mv_predict_sequence_full* function using the following input parameters:  
-  
+I ran the *mv_predict_sequence_full* function using the following inputs:  
 + X_test - sequences of predictors from the test set  
 + modelMSS -  the model object required to make predictions  
 + inputSeqLen - this is your starting sequence length. In my case, I used 1008, which was 21 days (3 weeks)  
@@ -402,7 +410,8 @@ predictMMS = mv_predict_sequence_full(data = X_test
                                       , excess_predictors = y_test_x)
 
 ```
-    
+  
+#### Method 3 - mv_predict_sequences_multiple
 ```python
 
 def mv_predict_sequences_multiple(model, data, window_size, prediction_len, excess_predictors):
@@ -443,8 +452,7 @@ def mv_predict_sequences_multiple(model, data, window_size, prediction_len, exce
     return prediction_seqs
 
 ```
-I ran *mv_predict_sequences_multiple* function using the following input parameters:  
-  
+I ran the *mv_predict_sequences_multiple* function using the following inputs:  
 + X_test - sequences of predictors from the test set  
 + modelMSS -  the model object required to make predictions  
 + inputSeqLen - this is your sequence length. In my case, I used 1008, which was 21 days (3 weeks)  
@@ -460,13 +468,33 @@ predictMMS = mv_predict_sequences_multiple(data = X_test
                                         , excess_predictors = y_test_x)
 
 ```
-
-
-The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
-
+  
 ### Modelled outcomes  
-One last, but important function is to take the predicted values and revert them back to their original scale. This can be done with the *return_original_scale_multiple* function below.  
+One last, but important set of functions take the predicted values and revert them back to their original scale. I could have left the results normalised, but I felt the values lose their context that the true scale provides.  
 
+This was done with the *mv_return_original_scale* and *return_original_scale_multiple* functions for Method 1 and Method 3 respectively. The reversal of the normalisation for Method 2 didn't not require a function as referencing the first data point as simple enough.  
+
+#### Method 1- Reversing normalisation with *mv_return_original_scale*  
+```python
+
+def mv_return_original_scale(norm_val, base_val):
+    
+    rescaled = (norm_val + 1) * base_val
+    
+    return rescaled
+
+```
+I ran the *mv_return_original_scale* function with the following inputs:  
++ predictMSS - an array of normalised predicted values from the single step model  
++ referenceVal - the normalisation reference values required to un-normalise the predictions  
+
+```python
+
+predictMSS_scaled = mv_return_original_scale(norm_val = predictMSS, base_val = referenceVal)
+
+```
+
+#### Method 3 - Reversing normalisation with *return_original_scale_multiple*  
 ```python
 
 def return_original_scale_multiple(norm_val, base_val, prediction_len):
@@ -495,10 +523,9 @@ def return_original_scale_multiple(norm_val, base_val, prediction_len):
     return rescaled, newRowDim
 
 ```
-I ran the *return_original_scale_multiple* function with the following input parameters:  
-
-+ predictMMS - the normalised predictions  
-+ referenceVal - the reference data required to un-normalise the predictions  
+I ran the *return_original_scale_multiple* function with the following input:  
++ predictMMS - the normalised predictions from the multi period model  
++ referenceVal - the normalisation reference values required to un-normalise the predictions  
 + inputPredLen - the length of time I specified predictions for (in this case it was 48 periods)  
 
 ```python
@@ -546,6 +573,8 @@ The results presented above were for models developed with both historical deman
 ![Results](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Results.PNG)  
 
 The results indicate the addition of temperature as a predictor has a positive impact on predictive capability across all three methods.  
+
+The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
 
 ## Final thoughts & conclusions
 I have presented my very preliminary exploration of using LSTMs to predict electricity demand.  
