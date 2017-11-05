@@ -84,30 +84,32 @@ I also wanted try alternative methods of predictions to understand how capable (
 First, a guide to the colour scheme:  
 + Data enclosed by green borders are predictors  
 + Data enclosed by blue borders predictions to be made  
-+ I've also left predictions that become predictors as the window shifts in blue text  
++ In blue text ARE predictions that become predictors as the window shifts   
 
 #### Adding dimensions  
-The examples below begin by illustrating a scenario where demand was the only input into making predictions. To further complicate matters, air temperature will be introduced as an additional dimension and the end of each method. This is where I spent the most time trying to get my head around a multi-dimensional space, so I hope these are helpful.    
-
+The examples below begin by illustrating a scenario where demand was the only input into making predictions. To add some complexity, air temperature will be introduced as an additional dimension and the end of each method. Temperature values have been presented in red text.  
+  
+Here we have a time-series of demand over 11 periods.    
+  
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
 and again with temperature  
-
+  
 ![Seq6](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq6.PNG)  
-
-The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences (or windows as I've sometimes called them) are be equivalent to observations as we train the model.  
+  
+The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences (or windows as I've sometimes called them) will be used as observations when we train the model.  
 
 If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.  
-
+  
 ![Seq2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq2.PNG)  
 and again with temperature  
-
-![Seq7](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq7.PNG)  
-
-*How long should a sequence be?*  
-It depends on your application, and probably a lot of trial and error.  
   
-Once the data is structured in this way, we're ready to start chopping it up to for training and making predictions  
-
+![Seq7](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq7.PNG)  
+  
+*How long should a sequence be?*  
+It depends on your application. Tune and test your model to find an optimum sequence length.  
+  
+Once the data is structured in this way, we're ready to start preparing it for training and making predictions. Now continue with understanding these different methods of making predictions.  
+  
 #### Method 1. Predicting the next value, using known data  
 In this method of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
   
