@@ -340,7 +340,7 @@ In this step, I've included the functions used to make predictions according to 
 + Method 2 - mv_predict_sequence_full  
 + Method 3 - mv_predict_sequences_multiple  
   
-The comments in the code provide an overview of the functions key steps. Each of the functions return an array of predicted values for the test set.  
+The comments in the code provide an overview of the functions key steps. Each of the functions return an array of predicted values for comparison to the true values in the test set.  
   
 ```python
 
