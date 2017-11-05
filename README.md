@@ -6,15 +6,16 @@ This readme will give a flavour for the process I have undertaken to model this 
   
 ### Project Motivations
 *Why did I choose to work on forecasting in the Australian electricity market?*  
-+ The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above broader inflation. The result is that there's something major happening in the news related to the energy market every few days. Also, when I think about career pathways, I could see myself possibly working in this industry.  
-+ I'm passionate about renewable energy, climate change and environmentalism so I wanted to understand more about how the electricity market operates.  
++ The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above inflation trends. The result is that there's something major happening in the news related to the energy market every few days. 
++ I'm passionate about renewable energy, climate change and the environment, so I wanted to understand more about how the electricity market operates.  
++ When I think about career pathways, I could see myself working in this industry. There's loads of data, technology is changing rapidly and there's often a geospatial angle to it (something I like).  
 + I had an appetiser into time-series modelling in my last semester at uni, which followed on with some forecasting at work. I wanted to extend my learning a bit further this time and see what python and LSTMs were all about.  
   
 ### The National Electricity Market  
 
-The Australian Energy Market Operator (AEMO) oversees the NEM. Their [website](https://www.aemo.com.au/Electricity/National-Electricity-Market-NEM) has some excellent resources for understanding how the market operates if you would like further information. AEMO make a number of short and long term forecasts for effective business planning and investment decisions. This project will focus forecasting over a short time horizon.  
+The Australian Energy Market Operator (AEMO) oversees the NEM. Their [website](https://www.aemo.com.au/Electricity/National-Electricity-Market-NEM) has some excellent resources for understanding how the market operates if you would like further information. One of AEMO's functions is to make a number of short and long term forecasts for effective business planning and investment decisions. This project will focus forecasting over a short time horizon.  
 
-### Some important details
+### Other important details
  The main tools I have used for this analysis are:  
  + Python 3.6, including the following libraries  
  	+ pandas  
@@ -60,13 +61,15 @@ What we can see from this plot is that on regular days (5th to 11th), the demand
 Let's add air temperature as an overlay over that same period:  
 ![DemandInclTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/TempOverlay.PNG)  
 
-What is evident is that as temperature rose, so did demand. It's not a perfectly aligned because we are comparing the whole of region and the air temperature observed at a single location, but it's pretty close.  
-  
+What is evident is that as temperature rose, so did demand.  
+
 The BOM confirms this extreme weather event in their January 2016 summary:  
 >"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
 http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml  
-  
-Let's remove the time-series sequencing and plot temperature against demand to understand the relationship independent of time:  
+
+It's not a perfectly aligned because we are comparing the whole of NSW and the air temperature observed at a single location, but there is a relationship present.  
+    
+Let's remove the time-series sequencing and plot temperature against demand to understand this relationship independent of time:  
 ![DemandTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DemandTemp.PNG)  
   
 We can see a clear U-shape forming between electricity demand and temperature. As temperature rises, people use more air conditioning, so demand rises. Simiarly, as temperature falls, people use more heating, so demand rises. There remains a 'sweet spot' of mild temperature between approximately 17 and 21 degrees Celsius where demand is lowest. The plot above has split the points by Weekdays and Weekends to show the comparatively lower demand on weekends due to large sections of the businesses sector not operating.  
@@ -76,9 +79,9 @@ The script where I've done my exploratory analysis can be found in Scripts/Explo
 ## Approach to modelling  
 I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
 
-I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used three different methods of making subsequent predictions. These are best illustrated with some simple, visual examples below.  
+I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a prediction of the next period, however I used two additional methods of making subsequent predictions by shifting a window of values forward. Confused?. Let me illustrate with some simple, visual examples below.  
   
-To understand the colour scheme:  
+First, a guide to the colour scheme:  
 + Data enclosed by green borders are predictors  
 + Data enclosed by blue borders predictions to be made  
 + I've also left predictions that become predictors in blue text  
