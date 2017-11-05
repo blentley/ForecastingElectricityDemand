@@ -1,17 +1,18 @@
 ## Project Introduction
 
-The purpose of this repository is to share with you my workflow initial attempt at predicting electricity demand using a LSTM neural network for the NSW National Energy Market (NEM) region. After reading about the successes other applications had achieved using LSTMs for sequence type predictions, I was keen to give them a try on this time series problem.  
+The purpose of this repository is to share with you my initial attempt at predicting electricity demand using a LSTM neural network for the NSW National Electricity Market (NEM) region. After reading about the successes other applications had achieved using LSTMs for sequence type predictions, I was keen to give them a try on this time series problem.  
   
 This readme will give a flavour for the process I have undertaken to model this demand as it's a simplification of the detail in the full version. The full suite of scripts are also available in this repository and I will make reference to them in the text below.
   
 ### Project Motivations
 *Why did I choose to work on forecasting in the Australian electricity market?*  
-+ The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above broader inflation. That means there's something major happening in the news related to the energy market every few days. When I think about career pathways, I could see myself possibly working in this industry.  
-+ I'm passionate about renewable energy, climate change and environmentalism so I wanted to understand more about how the market operates.  
++ The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above broader inflation. The result is that there's something major happening in the news related to the energy market every few days. Also, when I think about career pathways, I could see myself possibly working in this industry.  
++ I'm passionate about renewable energy, climate change and environmentalism so I wanted to understand more about how the electricity market operates.  
 + I had an appetiser into time-series modelling in my last semester at uni, which followed on with some forecasting at work. I wanted to extend my learning a bit further this time and see what python and LSTMs were all about.  
   
-### The National Energy Market (NEM)  
-The Australian Energy Market Operator (AEMO) makes a number of short and long term forecasts for effective business planning and investment decisions. This project will focus on their short term 5 minute dispatch forecast.  
+### The National Electricity Market  
+
+The Australian Energy Market Operator (AEMO) oversees the NEM. Their [website](https://www.aemo.com.au/Electricity/National-Electricity-Market-NEM) has some excellent resources for understanding how the market operates if you would like further information. AEMO make a number of short and long term forecasts for effective business planning and investment decisions. This project will focus forecasting over a short time horizon.  
 
 ### Some important details
  The main tools I have used for this analysis are:  
@@ -24,7 +25,7 @@ The Australian Energy Market Operator (AEMO) makes a number of short and long te
 This analysis will focus on the NSW NEM region and air temperature at Bankstown Airport (chosen for its somewhat geographical 'average' of Sydney, NSW) for the 2016 calendar year.
 
 ### Acknowledgements  
-I couldn't have made it this far without the knowledge shared by Dr Jason Brownlee and Jakob Aungiers, whose blogs were thoughtfully curated and easy to read. Respective links below:  
+I couldn't have made it this far without the knowledge shared by Dr Jason Brownlee and Jakob Aungiers, whose blogs were thoughtfully curated and easy to read. I'd highly encourage you to check them out. Respective links below:  
 https://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/  
 http://www.jakob-aungiers.com/articles/a/LSTM-Neural-Network-for-Time-Series-Prediction  
   
