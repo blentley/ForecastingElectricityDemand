@@ -76,7 +76,7 @@ We can see a clear U-shape forming between electricity demand and temperature. A
 
 The script where I've done my exploratory analysis can be found in Scripts/ExploratoryAnalysis.ipynb. There is also an equivalent HTML output.  
 
-## Approach to modelling  
+## Modelling Overview  
 I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
 
 I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a single prediction of the next period, however I used two additional methods to make multiple period predictions by shifting a window of values forward. Confused? Let me illustrate with some simple, visual examples below.  
@@ -87,7 +87,7 @@ First, a guide to the colour scheme:
 + In blue text ARE predictions that become predictors as the window shifts   
 
 #### Adding dimensions  
-The examples below begin by illustrating a scenario where demand was the only input into making predictions. To add some complexity, air temperature will be introduced as an additional dimension and the end of each method. Temperature values have been presented in red text.  
+The examples below begin by illustrating a scenario where demand was the only input into making predictions. To add some complexity, air temperature will be introduced as an additional dimension and the end of each step. Temperature values have been presented in red text.  
   
 Here we have a time-series of demand over 11 periods.    
   
@@ -114,31 +114,31 @@ Once the data is structured in this way, we're ready to start preparing it for t
 In this method of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
-
+  
 This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slight adjustments from it's known previous value and only be slightly incorrect each time. In practice, there's probably not limited application for a single period forecast, however it's a useful reference in this exercise.  
   
 Here is Method 1, with the feature for temperature included for three iterations  
   
 ![Seq8](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq8.PNG)  
-
+  
 #### Method 2. Predicting the entire sequence, using only a starting sequence of known data  
 In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data to predict a value for time period 7. The next prediction (time period 8) is made using known data from time periods 2 to 6, and the predicted value of time period 7. This process continues until the entirety of the sequence has been predicted. In this method, the known data used for prediction is limited to the initial sequence length, and subsequent predictions are reliant on previously predicted values. By the time we've made it to 'Demand 1.5', only two true values are used for prediction with the remaining values in the sequence coming from P7 to P10.  
   
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
-
+  
 This method of prediction is the least generous (and likely to result in the highest error) since we're only feeding the model limited information and relying on accurate predictions to sustain future predictions. Errors would continue to be amplified as the sequence progresses. However, it still serves as a useful reference point.  
   
 Here is Method 2, with the feature for temperature included for three iterations  
   
 ![Seq9](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq9.PNG)  
-
+  
 #### Method 3. Predicting multi-period sequences of a defined length  
 In this example, we need to chage some of our starting assumptions slightly. Let's assume our predicting sequence is now 3 periods, and we want to predict a sequence of 2 periods.  
 
 The row 'Demand 1.1' shows that the values in time periods 1 to 3 will be used to predict time period 4. This is a prediction made entirely using known data. Now for the next prediction, 'Demand 1.2', we will use the known values in time periods 2 & 3 and the previously predicted value of time period 4, to predict time period 5. 
 
 This process will reset as we predict 'Demand 2.1', where a fresh set of known values will be used to make a prediction for time period 6.  
-
+  
 ![Seq5](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq5.PNG)  
 This method of prediction is somewhat of a middle ground between Methods 1 and 2, where the future predictions are more difficult than simply predicting the next step, but not as difficult as predicting the entire sequence using only a starting seed of known values.  
 
@@ -177,6 +177,18 @@ def mv_prep_data(inputData, seq_len):
     return result 
 
 ```
+To use this function, I pass in two parameters:  
++ dataValues - the array of historical demand (and air temperature).  
++ inputSeqLen - the desired sequence length. In this case, I have chosen 1008 periods (21 days).  
+
+```python
+
+inputSeqLen = 1008
+dataPrep = mv_prep_data(inputData = dataValues, seq_len = inputSeqLen)
+
+````
+The returned result is a series of sequences:  
+![DP1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DP1.PNG)  
   
 #### 2. Normalise the data using *normalise_windows*
 This function is re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in values.  
@@ -210,6 +222,15 @@ def mv_normalise_windows(window_data):
     return normalised_data, base_data
 
 ```
+To use function, I pass in the previously sequenced data  
+
+```python
+
+dataNorm, dataBase = mv_normalise_windows(dataPrep)
+
+```
+The returned results are normalised sequences and a reference array of base values  
+![DP2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DP2.PNG)  
   
 #### 3. Partition the data into training and test sets  
 This function will take the normalised data and a point to split the dataset, and return six objects:  
