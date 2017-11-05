@@ -6,7 +6,7 @@ This readme will give a flavour for the process I have undertaken to model this 
   
 ### Project Motivations
 *Why did I choose to work on forecasting in the Australian electricity market?*  
-+ The energy sector is undergoing some major transformation after years of political bickering and little action. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above inflation trends. The result is that there's something major happening in the news related to the energy market every few days. 
++ The energy sector has been undergoing some major transformation in recent times. The private sector and consumers are becoming increasingly anxious about our energy future as energy prices continue to rise above inflation trends, while politicians have languished in their policy positions. The result is that there seems to be something major happening in the news related to the energy market every few days. 
 + I'm passionate about renewable energy, climate change and the environment, so I wanted to understand more about how the electricity market operates.  
 + When I think about career pathways, I could see myself working in this industry. There's loads of data, technology is changing rapidly and there's often a geospatial angle to it (something I like).  
 + I had an appetiser into time-series modelling in my last semester at uni, which followed on with some forecasting at work. I wanted to extend my learning a bit further this time and see what python and LSTMs were all about.  
@@ -15,8 +15,8 @@ This readme will give a flavour for the process I have undertaken to model this 
 
 The Australian Energy Market Operator (AEMO) oversees the NEM. Their [website](https://www.aemo.com.au/Electricity/National-Electricity-Market-NEM) has some excellent resources for understanding how the market operates if you would like further information. One of AEMO's functions is to make a number of short and long term forecasts for effective business planning and investment decisions. This project will focus forecasting over a short time horizon.  
 
-### Other important details
- The main tools I have used for this analysis are:  
+### Other important technical details
+The main tools I have used for this analysis are:  
  + Python 3.6, including the following libraries  
  	+ pandas  
  	+ plotly  
@@ -48,6 +48,7 @@ A sample of this data is available in SampleData/Demand.csv
 	+ Temperature - *air_temp (numeric)* - Air temperature measured in degrees Celsius  
   
 A sample of this data is available in SampleData/Temperature.csv  
+
 It's worth noting that the air temperature data will not arrive in a clean format as above. Each weather station's data will be in its own file and the usual cleansing, formatting and gap-filling will be needed.  
 
 The scripts where I've loaded raw demand and climate data into PostgreSQL can be found in Scripts/LoadDemand.ipynb and Scripts/LoadClimate.ipynb respectively. I've also included equivalent HTML outputs.   
@@ -67,7 +68,7 @@ The BOM confirms this extreme weather event in their January 2016 summary:
 >"Two heatwaves, over 11-14 and 19-21 January, resulted Observatory Hill recording 8 days above 30 °C, well above the average of 3 days and the most hot days since January 1991."  
 http://www.bom.gov.au/climate/current/month/nsw/archive/201601.sydney.shtml  
 
-It's not a perfectly aligned because we are comparing the whole of NSW and the air temperature observed at a single location, but there is a relationship present.  
+It's not a perfectly aligned because we are comparing the whole of NSW and the air temperature observed at a single location, but there's clearly a relationship present.  
     
 Let's remove the time-series sequencing and plot temperature against demand to understand this relationship independent of time:  
 ![DemandTemp](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DemandTemp.PNG)  
@@ -89,7 +90,7 @@ But first, a guide to the colour scheme:
 #### Adding dimensions  
 The examples below begin by illustrating a scenario where demand was the only input into making predictions. To add some complexity, air temperature will be introduced as an additional dimension and the end of each step. Temperature values have been presented in red text.  
   
-#### Prediction concepts  
+#### Data Processing & Prediction Concepts  
 Here we have a time-series of demand over 11 periods.    
   
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
@@ -148,6 +149,8 @@ Here is Method 3, with the feature for temperature included for two iterations
 ![Seq10](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq10.PNG)  
   
 For each of these different prediction types, the predicted values can still be compared to their known values during model validation.  
+
+With those concepts confirmed, the next steps will be to prepare the data, build the model, and then make predictions with it.  
   
 ### Preparing the data  
 The first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
@@ -192,7 +195,7 @@ The returned result is a series of sequences:
 ![DP1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DP1.PNG)  
   
 #### 2. Normalise the data using *normalise_windows*
-This function is used to re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in input values.  
+This function is used to re-scale all the values passed to it relative to the first value in the sequence. The first value in the sequence is scaled to 0 with everything else proportionate to that. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in input values.  
   
 I've included in the return *base_data* are the starting values of each sequence before normalisation. I need this for when it comes time to return the data back to its original scale, I have the reference point to unwind the normalisation.  
 
@@ -276,7 +279,7 @@ I use this function by passing in the following to the parameters:
 
 ```python
 
-## Partition the data into training and test sets
+# Partition the data into training and test sets
 # Split the data into 75% training and 25% test
 inputPartition = 0.75
 X_train, y_train, X_test, y_test, rowID, y_train_x, y_test_x = mv_split_data(inputData = dataNorm
@@ -321,7 +324,7 @@ def build_model(layers, inputTrain):
     return model
 
 ```  
-To use this model, I need to give it some data and other instructions for training (shown below).  
+To use this model, I need to give it some data and other instructions for training:  
 + X_train - this is the prepared sequences of predictors for the model.  
 + y_train - this is the array of true outcome values that the model will try to predict.  
 + batch_size -  this is the size of the data to process in batches within each epoch. Using batches will be more efficient than passing single sequences each time.  
@@ -579,10 +582,10 @@ The script where I performed the LSTM modelling can be found in Scripts/Predicti
 ## Final thoughts & conclusions
 I have presented my very preliminary exploration of using LSTMs to predict electricity demand.  
   
-I'll leave you with some ideas I had on how this could be improved:  
+I'll leave you with some ideas I had on how this could be improved (just a few of many, no doubt):  
 + Try to optimise the structure of the LSTM - The model I've specified above is an arbitrary combination of hidden layers, neurons and epochs, but could be optimised through a parameter search at scale.  
 + Use the LSTM to natively predict multiple periods - in this guide, I have specified one output from the LSTM before using methods of shifiting windows forward to make longer predictions. I'd be interested to see what the LSTM would return if it is told to return an x period prediction.  
 + Streamlining functions - you'll see in the notebooks attached, I have used separate functions for my univariate and multivariate modelling. The multivariate functions should be applicable for scenarios of all dimensions.  
 + Try different pre-processing of the data - I've chosen an arbitrary sequence length of 21 days, but this is not optimised. [Research](http://www.aemc.gov.au/getattachment/924537dd-1f48-4550-a134-78b3b7d3ba70/University-of-Wollongong,-Evaluation-of-Neural-Net.aspx) done by the University of Wollongong suggests a longer time period capturing seasonality could be significant.  
-+ Include a longer 
++ Include a longer period of training by including more historical data from 2015 and earlier.  
 + Try additional predictors - This could take the form of additional weather stations, additional climate features (humidity, rainfall) or smart meter data.  
