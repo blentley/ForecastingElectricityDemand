@@ -155,7 +155,7 @@ The first step was to aggregate upwards the 5 minute demand data into an average
 The steps for data preparation have been developed as a series of functions, which I'll run through below. These functions are capable of processing data for univariate and multivariate modelling.
 
 #### 1. Transform raw data into sequences using *prep_data*  
-In this function, our input data is transformed into sequences *(seq_len)*, before being returned as an array.  
+In this function, our input data is transformed into sequences of length *(seq_len)*, before being returned as an array.  
   
 ```python
 
@@ -192,7 +192,7 @@ The returned result is a series of sequences:
 ![DP1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DP1.PNG)  
   
 #### 2. Normalise the data using *normalise_windows*
-This function is re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in values.  
+This function is used to re-scale all the values passed to it relative to the first value in the sequence. This is important especially when additional predictors are added as the LSTM will be sensitve to different scale in input values.  
   
 I've included in the return *base_data* are the starting values of each sequence before normalisation. I need this for when it comes time to return the data back to its original scale, I have the reference point to unwind the normalisation.  
 
