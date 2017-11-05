@@ -79,39 +79,40 @@ The script where I've done my exploratory analysis can be found in Scripts/Explo
 ## Modelling Overview  
 I started off by developing a predictive model of energy demand, where I only used historical demand as a predictor. This would set a reference point for performance before I included temperature as a second predictor.  
 
-I also wanted try alternative methods of predictions to understand how capable (or limited) the LSTM might be. Each model makes a single prediction of the next period, however I used two additional methods to make multiple period predictions by shifting a window of values forward. Confused? Let me illustrate with some simple, visual examples below.  
+I also wanted to try alternative methods of predictions to understand how capable (or limited) the LSTM might be in this application. Each model makes a single prediction of the next period, however I used two additional methods to make multiple period predictions by shifting a window of values forward. Confused? Let me illustrate with some simple, visual examples below.  
   
-First, a guide to the colour scheme:  
-+ Data enclosed by green borders are predictors  
+But first, a guide to the colour scheme:  
++ Data enclosed by green borders are predictor sequences  
 + Data enclosed by blue borders predictions to be made  
-+ In blue text ARE predictions that become predictors as the window shifts   
++ In blue text are predictions that become part of the predictor sequence as the window shifts   
 
 #### Adding dimensions  
 The examples below begin by illustrating a scenario where demand was the only input into making predictions. To add some complexity, air temperature will be introduced as an additional dimension and the end of each step. Temperature values have been presented in red text.  
   
+#### Prediction concepts  
 Here we have a time-series of demand over 11 periods.    
   
 ![Seq1](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq1.PNG)  
-and again with temperature  
+Here it is again with a temperature variable  
   
 ![Seq6](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq6.PNG)  
   
-The first shift in our thinking needs to re-frame this from a time-series to a series of sequences. Sequences (or windows as I've sometimes called them) will be used as observations when we train the model.  
+The first shift in our thinking needs to re-frame this from a time-series dataset to a series of sequences. Sequences (or windows as I've sometimes described them) will be used as observations when we train the model.  
 
-If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below.  
+If we set a sequence length of 6 periods, then we need to transform this time series into sequence observations as shown below. In this example, I've been able to create six complete sequences of length 6 from these 11 data points.  
   
 ![Seq2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq2.PNG)  
-and again with temperature  
+Here is the example with temperature showing three complete observations of sequence length 6.  
   
 ![Seq7](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq7.PNG)  
   
 *How long should a sequence be?*  
 It depends on your application. Tune and test your model to find an optimum sequence length.  
   
-Once the data is structured in this way, we're ready to start preparing it for training and making predictions. Now continue with understanding these different methods of making predictions.  
+Once the data is structured in this way, we're ready to start preparing it for training and making predictions. For now, let's continue with understanding different methods of making predictions.  
   
 #### Method 1. Predicting the next value, using known data  
-In this method of single-step prediction, sequences of known demand data are used to predict LP (last prediction).  
+In this method of single-step prediction, sequences of known demand data are continually used to predict LP (last prediction).  
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
   
@@ -133,7 +134,7 @@ Here is Method 2, with the feature for temperature included for three iterations
 ![Seq9](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq9.PNG)  
   
 #### Method 3. Predicting multi-period sequences of a defined length  
-In this example, we need to chage some of our starting assumptions slightly. Let's assume our predicting sequence is now 3 periods, and we want to predict a sequence of 2 periods.  
+In this example, let's assume our sequence length is 3 periods and we want to predict a sequence of 2 periods (These can be anything, I've only shortened them to keep the example concise).  
 
 The row 'Demand 1.1' shows that the values in time periods 1 to 3 will be used to predict time period 4. This is a prediction made entirely using known data. Now for the next prediction, 'Demand 1.2', we will use the known values in time periods 2 & 3 and the previously predicted value of time period 4, to predict time period 5. 
 
@@ -146,10 +147,10 @@ Here is Method 3, with the feature for temperature included for two iterations
   
 ![Seq10](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq10.PNG)  
   
-For each of these different prediction tyes, the predicted values can still be compared to their known values during model validation.  
+For each of these different prediction types, the predicted values can still be compared to their known values during model validation.  
   
 ### Preparing the data  
-For convenience, the first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
+The first step was to aggregate upwards the 5 minute demand data into an average 30 minute demand so that it would easily join to the air temperature data.  
   
 The steps for data preparation have been developed as a series of functions, which I'll run through below. These functions are capable of processing data for univariate and multivariate modelling.
 
