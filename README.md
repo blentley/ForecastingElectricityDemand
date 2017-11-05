@@ -579,10 +579,8 @@ The results indicate the addition of temperature as a predictor has a positive i
 
 The script where I performed the LSTM modelling can be found in Scripts/PredictingDemand.ipynb. There is also an equivalent HTML output.  
 
-## Final thoughts & conclusions
-I have presented my very preliminary exploration of using LSTMs to predict electricity demand.  
-  
-I'll leave you with some ideas I had on how this could be improved (just a few of many, no doubt):  
+## Final Thoughts
+I have presented my very preliminary exploration of using LSTMs to predict electricity demand. I'll leave you with some ideas I had on how this could be improved (there are probably many more, no doubt):  
 + Try to optimise the structure of the LSTM - The model I've specified above is an arbitrary combination of hidden layers, neurons and epochs, but could be optimised through a parameter search at scale.  
 + Use the LSTM to natively predict multiple periods - in this guide, I have specified one output from the LSTM before using methods of shifiting windows forward to make longer predictions. I'd be interested to see what the LSTM would return if it is told to return an x period prediction.  
 + Streamlining functions - you'll see in the notebooks attached, I have used separate functions for my univariate and multivariate modelling. The multivariate functions should be applicable for scenarios of all dimensions.  
