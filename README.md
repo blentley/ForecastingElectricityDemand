@@ -115,14 +115,14 @@ In this method of single-step prediction, sequences of known demand data are use
   
 ![Seq3](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq3.PNG)  
 
-This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slightly adjustments from it's known previous value and only be slightly incorrect each time. There's probably not a value for predicting the next period, however it's a useful reference.  
+This method of prediction is the most generous since we're providing it with known data all the time to make one prediction at a time. In this method, I'm expecting the error to be the smallest, as the model will likely make slight adjustments from it's known previous value and only be slightly incorrect each time. In practice, there's probably not limited application for a single period forecast, however it's a useful reference in this exercise.  
   
 Here is Method 1, with the feature for temperature included for three iterations  
   
 ![Seq8](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq8.PNG)  
 
 #### Method 2. Predicting the entire sequence, using only a starting sequence of known data  
-In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data to predict a value for time period 7. The next prediction (time period 8) is made using known data from time periods 2 to 6, and the predicted value of time period 7. This process continues until the entirety of the sequence has been predicted. In this method, the known data used for prediction is limited to the initial sequence length, and subsequent predictions are reliant on previously predicted values.  
+In this method of prediction, the row 'Demand 1.1' uses 6 periods of know data to predict a value for time period 7. The next prediction (time period 8) is made using known data from time periods 2 to 6, and the predicted value of time period 7. This process continues until the entirety of the sequence has been predicted. In this method, the known data used for prediction is limited to the initial sequence length, and subsequent predictions are reliant on previously predicted values. By the time we've made it to 'Demand 1.5', only two true values are used for prediction with the remaining values in the sequence coming from P7 to P10.  
   
 ![Seq4](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/Seq4.PNG)  
 
