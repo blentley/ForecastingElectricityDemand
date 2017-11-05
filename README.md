@@ -229,7 +229,7 @@ To use function, I pass in the previously sequenced data
 dataNorm, dataBase = mv_normalise_windows(dataPrep)
 
 ```
-The returned results are normalised sequences and a reference array of base values  
+The returned results are normalised sequences and a reference array of base values. You will notice that the base values correspond to first set of values in the previous step.  
 ![DP2](https://github.com/blentley/ForecastingElectricity/blob/master/Screenshots/DP2.PNG)  
   
 #### 3. Partition the data into training and test sets  
@@ -268,24 +268,21 @@ def mv_split_data(inputData, partitionPoint, outcomeCol):
     return [x_train, y_train_y, x_test, y_test_y, row, y_train_x, y_test_x]
 
 ```
-  
-#### 4. Shaping the data  
-The last step before modelling is to define the shape of the data. Here we specify three dimensions of the data:  
-+ The number of observations / sequences  
-+ The length of the sequence  
-+ The number of features / dimensions  
+I use this function by passing in the following parameters:  
++ dataNorm - the normalised sequences from the previous step.  
++ inputPartition - the % to allocate to model training. Here I've specified 75% of the data to be dedicated for model training.  
++ outcomeCol - the column index which has the variable we're aiming to predict.  
 
 ```python
 
-# Define a function for shaping the data into appropriately dimensioned tensors for Keras
-def shape_data(inputData, featureNum):
-    
-    # Reshape the input array
-    result = np.reshape(inputData, (inputData.shape[0], inputData.shape[1], featureNum))
-    
-    return result
-
+## Partition the data into training and test sets
+# Split the data into 75% training and 25% test
+inputPartition = 0.75
+X_train, y_train, X_test, y_test, rowID, y_train_x, y_test_x = mv_split_data(inputData = dataNorm
+                                                                             , partitionPoint = inputPartition
+                                                                             , outcomeCol = 0)
 ```
+The returned results are similar in nature to the previous outputs, however they have been split into their respectve parts.  
   
 ### Assembling the model  
 The next step is where we get to assemble the model using Keras.  
@@ -294,7 +291,6 @@ Let's first understand what are the inputs:
 + layers - this is a list of numbers which I specify how many neurons I want in each layer. In my case, I have specified [25, 10, 1], so my first layer will have 25 hours, my second layer will have 10, and my final output layer will have 1 (i.e. my predicted value).  
 + inputTrain - here I pass in X_train, not for training, but to get the dimensions of the data that the model will train on   
   
-
 Now let's break down the components of this function:  
 + Assigning a variable 'model' to Sequential() initiates a sequential model class, which can be thought of as a linear stack of layers.  
 + Next we add layers which for the first one I've specified to be a LSTM layer. In this first layer, we need to specify what shape the data coming in will be, which can be done with the *input_shape* parameter. I then add the second hidden layer which will contain 10 neurons.  
