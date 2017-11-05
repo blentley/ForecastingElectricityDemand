@@ -271,9 +271,9 @@ Let's first understand what are the inputs:
 Now let's break down the components of this function:  
 + Assigning a variable 'model' to Sequential() initiates a sequential model class, which can be thought of as a linear stack of layers.  
 + Next we add layers which for the first one I've specified to be a LSTM layer. In this first layer, we need to specify what shape the data coming in will be, which can be done with the *input_shape* parameter. I then add the second hidden layer which will contain 10 neurons.  
-+ I then add the last layer ('Dense'), which will be the output layer.    
++ I then add the last layer ('Dense'), which will be the output layer with a single neuron.    
 + For simplicity, I've specified the activation function of the neurons to be linear.  
-+ Finally, to compile the model, I specify the loss function as the mean-squared error which is what the network will aim to minimise by adjusting its weights during training.   
++ Finally, to compile the model, I specify the loss function as the mean-squared error which is what the network will aim to minimise by adjusting its weights during training. The optimisation algorithm used is 'rmsprop', a modified form gradient descent that balances step size which effectively normalises the gradient.  
 
 ```python
 
@@ -298,6 +298,11 @@ def build_model(layers, inputTrain):
 
 ```  
 To use this model, I need to give it some data and other instructions for training (shown below).  
++ X_train - this is the prepared sequences of predictors for the model.  
++ y_train - this is the array of true outcome values that the model will try to predict.  
++ batch_size -  this is the size of the data to process in batches within each epoch. Using batches will be more efficient than passing single sequences each time.  
++ inputEpochs - this is the number of life-cycles of this neural network, where one iteration passes all data through the network.  
++ validation_split - this is the proportion of the data to be held out for validation purposes.  
 
 ```python
 
